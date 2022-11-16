@@ -1,0 +1,85 @@
+---
+title: "CSE 160 - Final Project - Chicago COVID-19 Risk"
+author: "Gabby Rub, Jacklyn Clauss, Mario Martino, Shuang Lin, Tony Wu"
+date: "22 November 2022"
+output: html_notebook
+---
+
+Import data and Chicago shapefile
+```{r}
+
+
+```
+
+Clean data
+```{r}
+
+
+```
+
+Clean shapefile
+```{r}
+
+
+```
+
+Partition data (80:20)
+```{r}
+
+
+```
+
+Build Linear Regression model. Save performance measures or later comparison.
+```{r}
+
+
+
+```
+
+Build Naive Bayes model. Save performance measures or later comparison.
+```{r}
+
+
+```
+
+Build Decision Tree model. Save performance measures or later comparison.
+```{r}
+
+
+```
+
+Build K Nearest Neighbor model. Save performance measures or later comparison.
+```{r}
+
+
+```
+
+Compare all model performances (Table & ROC Curves)
+```{r}
+
+
+```
+
+Use best model to predict infection rate on test data.
+```{r}
+
+
+```
+
+Add binary attribute to data frame to create the easier read mapping
+```{r}
+
+
+```
+
+Mapping of infection risk percentages
+```{r}
+
+
+```
+
+Mapping of binary risk areas
+```{r}
+
+
+```
