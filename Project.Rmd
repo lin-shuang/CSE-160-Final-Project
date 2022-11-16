@@ -8,7 +8,7 @@ output: html_notebook
 Import data and Chicago shapefile
 ```{r}
 
-df_covid <- read.csv("COVID-19_Cases__Tests__and_Deaths_by_ZIP_Code.csv")
+df_original <- read.csv("COVID-19_Cases__Tests__and_Deaths_by_ZIP_Code.csv")
 
 ```
 
@@ -16,7 +16,7 @@ Clean data
 ```{r}
 
 #clean attributes
-df_clean <- subset(df_covid, select = -c(Row.ID, Death.Rate...Cumulative, Death.Rate...Weekly, Deaths...Cumulative, Deaths...Weekly, Tests...Cumulative, Tests...Weekly, Test.Rate...Cumulative, Test.Rate...Weekly, Percent.Tested.Positive...Cumulative, Percent.Tested.Positive...Weekly))
+df_covid <- subset(df_covid_original, select = -c(Row.ID, Death.Rate...Cumulative, Death.Rate...Weekly, Deaths...Cumulative, Deaths...Weekly, Tests...Cumulative, Tests...Weekly, Test.Rate...Cumulative, Test.Rate...Weekly, Percent.Tested.Positive...Cumulative, Percent.Tested.Positive...Weekly))
 
 #remove unkown zip code rows
 for(i in 1:nrow(df_covid))
@@ -27,7 +27,10 @@ if(df_covid$ZIP.Code[i] == "Unknown"){
 #remove all NAs
 df_covid <- na.omit(df_covid)
 
-df_covid$Week.Start<-as.Date(df_covid$Week.Start, format = "%m/%d-%Y")
+#format dates
+df_covid$Week.Start<-as.Date(df_covid$Week.Start, format = "%m/%d/%Y")
+df_covid$Week.End<-as.Date(df_covid$Week.End, format = "%m/%d/%Y")
+
 
 ```
 
