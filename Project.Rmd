@@ -8,6 +8,7 @@ output: html_notebook
 Import data and Chicago shapefile
 ```{r}
 
+df_covid <- read.csv("COVID-19_Cases__Tests__and_Deaths_by_ZIP_Code.csv")
 
 ```
 
