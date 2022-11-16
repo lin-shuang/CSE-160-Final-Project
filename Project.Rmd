@@ -15,12 +15,16 @@ df_covid <- read.csv("COVID-19_Cases__Tests__and_Deaths_by_ZIP_Code.csv")
 Clean data
 ```{r}
 
+#clean attributes
+df_clean <- subset(df_covid, select = -c(Row.ID, Death.Rate...Cumulative, Death.Rate...Weekly, Deaths...Cumulative, Deaths...Weekly, Tests...Cumulative, Tests...Weekly, Test.Rate...Cumulative, Test.Rate...Weekly, Percent.Tested.Positive...Cumulative, Percent.Tested.Positive...Weekly))
+
 #remove unkown zip code rows
 for(i in 1:nrow(df_covid))
 if(df_covid$ZIP.Code[i] == "Unknown"){
   df_covid$ZIP.Code[i] <- NA
 }
 
+#remove all NAs
 df_covid <- na.omit(df_covid)
 
 ```
