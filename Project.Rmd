@@ -27,6 +27,8 @@ if(df_covid$ZIP.Code[i] == "Unknown"){
 #remove all NAs
 df_covid <- na.omit(df_covid)
 
+df_covid$Week.Start<-as.Date(df_covid$Week.Start, format = "%m/%d-%Y")
+
 ```
 
 Clean shapefile
