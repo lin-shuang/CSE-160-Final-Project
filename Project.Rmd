@@ -16,12 +16,13 @@ Clean data
 ```{r}
 
 #clean attributes
-df_covid <- subset(df_covid_original, select = -c(Row.ID, Death.Rate...Cumulative, Death.Rate...Weekly, Deaths...Cumulative, Deaths...Weekly, Tests...Cumulative, Tests...Weekly, Test.Rate...Cumulative, Test.Rate...Weekly, Percent.Tested.Positive...Cumulative, Percent.Tested.Positive...Weekly))
+df_covid <- subset(df_original, select = -c(Row.ID, Death.Rate...Cumulative, Death.Rate...Weekly, Deaths...Cumulative, Deaths...Weekly, Tests...Cumulative, Tests...Weekly, Test.Rate...Cumulative, Test.Rate...Weekly, Percent.Tested.Positive...Cumulative, Percent.Tested.Positive...Weekly, Case.Rate...Cumulative, Case.Rate...Weekly, Week.End))
 
-#remove unkown zip code rows
-for(i in 1:nrow(df_covid))
-if(df_covid$ZIP.Code[i] == "Unknown"){
-  df_covid$ZIP.Code[i] <- NA
+#remove unknown zip codes
+for(i in 1:nrow(df_covid)){
+  if(df_covid$ZIP.Code[i] == "Unknown"){
+    df_covid$ZIP.Code[i] <- NA
+  }
 }
 
 #remove all NAs
@@ -29,8 +30,9 @@ df_covid <- na.omit(df_covid)
 
 #format dates
 df_covid$Week.Start<-as.Date(df_covid$Week.Start, format = "%m/%d/%Y")
-df_covid$Week.End<-as.Date(df_covid$Week.End, format = "%m/%d/%Y")
 
+#sort by ZIP.Code then Week.Start date then Week.Number
+df_covid <- df_covid[order(df_covid$ZIP.Code, df_covid$Week.Start, df_covid$Week.Number), ]
 
 ```
 
@@ -40,34 +42,318 @@ Clean shapefile
 
 ```
 
-Partition data (80:20)
+Set up time series
 ```{r}
 
+#year and month
+df_covid$Year <- format(df_covid$Week.Start, "%y");
+df_covid$Month <- format(df_covid$Week.Start, "%m");
+
+#last week's cumulative cases by zip code
+for (i in 2:nrow(df_covid)){
+  if(df_covid$ZIP.Code[i] == df_covid$ZIP.Code[i-1]){
+    df_covid$Prior.Week.Cumulative[i] <- df_covid$Cases...Cumulative[i-1];
+  }
+  else{
+    df_covid$Prior.Week.Cumulative[i] <- NA
+  }
+}
+
+#last week's case rate by zip code
+for (i in 2:nrow(df_covid)){
+  if(df_covid$ZIP.Code[i] == df_covid$ZIP.Code[i-1]){
+    df_covid$Prior.Week.Rate[i] <- ((df_covid$Cases...Cumulative[i-1]) / (df_covid$Population[i-1]));
+  }
+  else{
+    df_covid$Prior.Week.Rate[i] <- NA
+  }
+}
+
+#remove zip code 60666 (airport), creates inf rate due to 0 population
+for(i in 1:nrow(df_covid)){
+  if(df_covid$ZIP.Code[i] == "60666"){
+    df_covid$ZIP.Code[i] <- NA
+  }
+}
+
+#remove NAs again for first-time recordings of each zip code in 2020
+df_covid <- na.omit(df_covid)
 
 ```
 
-Build Linear Regression model. Save performance measures or later comparison.
+Randomly sort data for testing. Keep neat data for viewing.
 ```{r}
 
+#keep neat data
+df_covid_sorted <- df_covid
 
+#randomly sort
+df_covid <- df_covid[sample(1:nrow(df_covid)), ]
 
 ```
 
-Build Naive Bayes model. Save performance measures or later comparison.
+Partition data (10-folds)
 ```{r}
 
+#set seed for consistency
+set.seed(160)
+
+#partition to 10-folds of data, 10% each
+folds_list <- list()
+
+for(i in 1:10){
+  
+  folds_list[[i]] <- df_covid[(1 + (810*(i-1))):(810 * (i)),] #rounded up
+}
 
 ```
 
-Build Decision Tree model. Save performance measures or later comparison.
+Build Linear Regression model. Test using 10-fold cross validation. Save performance measures or later comparison.
 ```{r}
 
+#initialize vectors of accuracy, precision, and recall
+acc <- c()
+precs <- c()
+rec <- c()
+
+#increment each test fold 
+for(i in 1:10){
+  
+  #initialize empty train data frame
+  train <- data.frame()
+  train <- merge(train, folds_list[[1]], all=TRUE)
+  
+  #merge other folds into train
+  for(j in 1:10){ 
+    if(j != i){
+      train <- merge(train, folds_list[[j]], all=TRUE)
+    }
+  }
+  
+  #test data from independent fold 1
+  test <- data.frame(folds_list[[i]])
+  
+  #remove rows of NAs from rounding up
+  train <- na.omit(train)
+  test <- na.omit(test)
+  
+  #build model
+  model_glm <- glm(Cases...Weekly ~ ZIP.Code + Week.Number + Week.Start + Population + Year + Month + Prior.Week.Cumulative + Prior.Week.Rate, data=train)
+  
+  #predict with model
+  pred.value <- predict(model_glm, test)
+  
+  # make actuals-predicteds dataframe.
+  actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.value));
+  
+  #calculate accuracy
+  acc[i] <- cor(actuals_preds$actuals, actuals_preds$predicteds);
+  
+  #calculate precision
+  precs[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$predicteds)
+
+  #calculate recall
+  rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
+}
+
+#print Averages
+print(paste0("Average Accuracy: ", mean(acc))) 
+print(paste0("Average Precision: ", mean(precs)))
+print(paste0("Average Recall: ", mean(rec)))
+
+#store performance measures
+acc_glm <- mean(acc)
+precs_glm <- mean(precs)
+rec_glm <- mean(rec)
 
 ```
 
-Build K Nearest Neighbor model. Save performance measures or later comparison.
+Build Naive Bayes model. Test using 10-fold cross validation. Save performance measures or later comparison.
 ```{r}
 
+#nb library
+library(e1071)
+
+#initialize vectors of accuracy, precision, and recall
+acc <- c()
+precs <- c()
+rec <- c()
+
+#increment each test fold 
+for(i in 1:10){
+  
+  #initialize empty train data frame
+  train <- data.frame()
+  train <- merge(train, folds_list[[1]], all=TRUE)
+  
+  #merge other folds into train
+  for(j in 1:10){ 
+    if(j != i){
+      train <- merge(train, folds_list[[j]], all=TRUE)
+    }
+  }
+  
+  #test data from independent fold 1
+  test <- data.frame(folds_list[[i]])
+  
+  #remove rows of NAs from rounding up
+  train <- na.omit(train)
+  test <- na.omit(test)
+  
+  #build model
+  model_nB <- naiveBayes(Cases...Weekly ~ ZIP.Code + Week.Number + Week.Start + Population + Year + Month + Prior.Week.Cumulative + Prior.Week.Rate, data=train)
+  
+  #predict with model
+  pred.value <- predict(model_nB, test)
+  
+  # make actuals-predicteds dataframe.
+  actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.value));
+  
+  #calculate accuracy
+  acc[i] <- cor(actuals_preds$actuals, actuals_preds$predicteds);
+  
+  #calculate precision
+  precs[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$predicteds)
+
+  #calculate recall
+  rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
+}
+
+#print Averages
+print(paste0("Average Accuracy: ", mean(acc))) 
+print(paste0("Average Precision: ", mean(precs)))
+print(paste0("Average Recall: ", mean(rec)))
+
+#store performance measures
+acc_nB <- mean(acc)
+precs_nB <- mean(precs)
+rec_nB <- mean(rec)
+
+```
+
+Build Decision Tree model. Test using 10-fold cross validation. Save performance measures or later comparison.
+```{r}
+
+#decision tree library
+library(rpart);
+
+#initialize vectors of accuracy, precision, and recall
+acc <- c()
+precs <- c()
+rec <- c()
+
+#increment each test fold 
+for(i in 1:10){
+  
+  #initialize empty train data frame
+  train <- data.frame()
+  train <- merge(train, folds_list[[1]], all=TRUE)
+  
+  #merge other folds into train
+  for(j in 1:10){ 
+    if(j != i){
+      train <- merge(train, folds_list[[j]], all=TRUE)
+    }
+  }
+  
+  #test data from independent fold 1
+  test <- data.frame(folds_list[[i]])
+  
+  #remove rows of NAs from rounding up
+  train <- na.omit(train)
+  test <- na.omit(test)
+  
+  #build model
+  model_tree <- rpart(Cases...Weekly ~ ZIP.Code + Week.Number + Week.Start + Population + Year + Month + Prior.Week.Cumulative + Prior.Week.Rate, data=train)
+
+#predict with model
+  pred.value <- predict(model_tree, test)
+  
+  # make actuals-predicteds dataframe.
+  actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.value));
+  
+  #calculate accuracy
+  acc[i] <- cor(actuals_preds$actuals, actuals_preds$predicteds);
+  
+  #calculate precision
+  precs[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$predicteds)
+
+  #calculate recall
+  rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
+}
+
+#print Averages
+print(paste0("Average Accuracy: ", mean(acc))) 
+print(paste0("Average Precision: ", mean(precs)))
+print(paste0("Average Recall: ", mean(rec)))
+
+#store performance measures
+acc_tree <- mean(acc)
+precs_tree <- mean(precs)
+rec_tree <- mean(rec)
+
+```
+
+Build K Nearest Neighbor model with ZIP.Code as numeric because kNN requires all attributes to be numeric (it is okay because neighboring zip codes are related in numbering). Test using 10-fold cross validation. Save performance measures or later comparison. Found by testing that distance=1 and k=9 is best.
+```{r}
+
+#kNN library
+library(kknn)
+
+#initialize vectors of accuracy, precision, and recall
+acc <- c()
+precs <- c()
+rec <- c()
+
+#increment each test fold 
+for(i in 1:10){
+  
+  #initialize empty train data frame
+  train <- data.frame()
+  train <- merge(train, folds_list[[1]], all=TRUE)
+  
+  #merge other folds into train
+  for(j in 1:10){ 
+    if(j != i){
+      train <- merge(train, folds_list[[j]], all=TRUE)
+    }
+  }
+  
+  #test data from independent fold 1
+  test <- data.frame(folds_list[[i]])
+  
+  #remove rows of NAs from rounding up
+  train <- na.omit(train)
+  test <- na.omit(test)
+  
+  #build model
+  model_kNN <- kknn(Cases...Weekly ~ ZIP.Code + Week.Number + Week.Start + Population + Year + Month + Prior.Week.Cumulative + Prior.Week.Rate, train, test, distance=1, k=9)
+
+#predict with model
+  pred.value <- predict(model_kNN)
+  
+  # make actuals-predicteds dataframe.
+  actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.value));
+  
+  #calculate accuracy
+  acc[i] <- cor(actuals_preds$actuals, actuals_preds$predicteds);
+  
+  #calculate precision
+  precs[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$predicteds)
+
+  #calculate recall
+  rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
+}
+
+#print Averages
+print(paste0("Average Accuracy: ", mean(acc))) 
+print(paste0("Average Precision: ", mean(precs)))
+print(paste0("Average Recall: ", mean(rec)))
+
+#store performance measures
+acc_kNN <- mean(acc)
+precs_kNN <- mean(precs)
+rec_kNN <- mean(rec)
 
 ```
 
