@@ -357,6 +357,14 @@ rec_kNN <- mean(rec)
 
 ```
 
+Clean workspace environment
+```{r}
+
+zRemoved_objs <- c("pred.value", "actuals_preds", "folds_list", "i", "j", "test", "train", "acc", "precs", "rec")
+rm(list = zRemoved_objs)
+
+```
+
 Compare all model performances (Table & ROC Curves)
 ```{r}
 
