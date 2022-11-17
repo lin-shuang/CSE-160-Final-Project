@@ -10,6 +10,9 @@ Import data and Chicago shapefile
 
 df_original <- read.csv("COVID-19_Cases__Tests__and_Deaths_by_ZIP_Code.csv")
 
+#set seed for consistency
+set.seed(160)
+
 ```
 
 Clean data
@@ -94,9 +97,6 @@ df_covid <- df_covid[sample(1:nrow(df_covid)), ]
 
 Partition data (10-folds)
 ```{r}
-
-#set seed for consistency
-set.seed(160)
 
 #partition to 10-folds of data, 10% each
 folds_list <- list()
