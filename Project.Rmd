@@ -154,17 +154,28 @@ for(i in 1:10){
 
   #calculate recall
   rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
+  
+  #calculate the mean absolute percentage error, must remove the rows where the actual value is equal to zero to avoid division by 0.
+  actuals_preds_mape <-actuals_preds[(actuals_preds$actuals!=0),]
+  mape[i] <- mean(abs((actuals_preds_mape$predicteds - actuals_preds_mape$actuals)/actuals_preds_mape$actuals))
+  
+  #calculate the mean squared error
+  mse[i] <- mean((test$Cases...Weekly-pred.value)^2)
 }
 
 #print Averages
 print(paste0("Average Accuracy: ", mean(acc))) 
 print(paste0("Average Precision: ", mean(precs)))
 print(paste0("Average Recall: ", mean(rec)))
+print(paste0("Average Mean Absolute Percent Error: ", mean(mape)))
+print(paste0("Average Mean Squared Error: ", mean (mse)))
 
 #store performance measures
 acc_glm <- mean(acc)
 precs_glm <- mean(precs)
 rec_glm <- mean(rec)
+mape_glm<- mean(mape)
+mse_glm <- mean(mse)
 
 ```
 
@@ -217,17 +228,33 @@ for(i in 1:10){
 
   #calculate recall
   rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
+  
+  #calculate the mean absolute percentage error
+  #the number of cases are being stored as factors, so we must convert them to numbers
+  num_pred <- as.numeric(as.character(actuals_preds$predicteds))
+  num_act <- as.numeric(as.character(actuals_preds$actuals))
+  actuals_preds_mape <- data.frame(num_act,num_pred)
+  #must remove the rows where the actual value is equal to zero to avoid division by 0
+  actuals_preds_mape <-actuals_preds_mape[(actuals_preds_mape$num_act!=0),]
+  mape[i] <- mean(abs((actuals_preds_mape$num_pred - actuals_preds_mape$num_act)/actuals_preds_mape$num_act))
+  
+  #calculate the mean squared error
+  mse[i] <- mean((test$Cases...Weekly-num_pred)^2)
 }
 
 #print Averages
 print(paste0("Average Accuracy: ", mean(acc))) 
 print(paste0("Average Precision: ", mean(precs)))
 print(paste0("Average Recall: ", mean(rec)))
+print(paste0("Average Mean Absolute Percent Error: ", mean(mape)))
+print(paste0("Average Mean Squared Error: ", mean (mse)))
 
 #store performance measures
 acc_nB <- mean(acc)
 precs_nB <- mean(precs)
 rec_nB <- mean(rec)
+mape_nB<- mean(mape)
+mse_nB <- mean(mse)
 
 ```
 
@@ -280,17 +307,27 @@ for(i in 1:10){
 
   #calculate recall
   rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
+  
+  #calculate the mean absolute percentage error, must remove the rows where the actual value is equal to zero to avoid division by 0.
+  actuals_preds_mape <-actuals_preds[(actuals_preds$actuals!=0),]
+  mape[i] <- mean(abs((actuals_preds_mape$predicteds - actuals_preds_mape$actuals)/actuals_preds_mape$actuals))
+  #calculate the mean squared error
+  mse[i] <- mean((test$Cases...Weekly-pred.value)^2)
 }
 
 #print Averages
 print(paste0("Average Accuracy: ", mean(acc))) 
 print(paste0("Average Precision: ", mean(precs)))
 print(paste0("Average Recall: ", mean(rec)))
+print(paste0("Average Mean Absolute Percent Error: ", mean(mape)))
+print(paste0("Average Mean Squared Error: ", mean (mse)))
 
 #store performance measures
 acc_tree <- mean(acc)
 precs_tree <- mean(precs)
 rec_tree <- mean(rec)
+mape_tree<- mean(mape)
+mse_tree <- mean(mse)
 
 ```
 
@@ -343,18 +380,27 @@ for(i in 1:10){
 
   #calculate recall
   rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
+  
+  #calculate the mean absolute percentage error, must remove the rows where the actual value is equal to zero to avoid division by 0.
+  actuals_preds_mape <-actuals_preds[(actuals_preds$actuals!=0),]
+  mape[i] <- mean(abs((actuals_preds_mape$predicteds - actuals_preds_mape$actuals)/actuals_preds_mape$actuals))
+  #calculate the mean squared error
+  mse[i] <- mean((test$Cases...Weekly-pred.value)^2)
 }
 
 #print Averages
 print(paste0("Average Accuracy: ", mean(acc))) 
 print(paste0("Average Precision: ", mean(precs)))
 print(paste0("Average Recall: ", mean(rec)))
+print(paste0("Average Mean Absolute Percent Error: ", mean(mape)))
+print(paste0("Average Mean Squared Error: ", mean (mse)))
 
 #store performance measures
 acc_kNN <- mean(acc)
 precs_kNN <- mean(precs)
 rec_kNN <- mean(rec)
-
+mape_kNN<- mean(mape)
+mse_kNN <- mean(mse)
 ```
 
 Clean workspace environment
