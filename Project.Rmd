@@ -215,10 +215,10 @@ for(i in 1:10){
   model_nB <- naiveBayes(Cases...Weekly ~ ZIP.Code + Week.Number + Week.Start + Population + Year + Month + Prior.Week.Cumulative + Prior.Week.Rate, data=train)
   
   #predict with model
-  pred.value <- predict(model_nB, test)
+  pred.valueNB <- predict(model_nB, test)
   
   # make actuals-predicteds dataframe.
-  actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.value));
+  actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.valueNB));
   
   #calculate accuracy
   acc[i] <- cor(actuals_preds$actuals, actuals_preds$predicteds);
@@ -294,10 +294,10 @@ for(i in 1:10){
   model_tree <- rpart(Cases...Weekly ~ ZIP.Code + Week.Number + Week.Start + Population + Year + Month + Prior.Week.Cumulative + Prior.Week.Rate, data=train)
 
 #predict with model
-  pred.value <- predict(model_tree, test)
+  pred.valueDT <- predict(model_tree, test)
   
   # make actuals-predicteds dataframe.
-  actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.value));
+  actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.valueDT));
   
   #calculate accuracy
   acc[i] <- cor(actuals_preds$actuals, actuals_preds$predicteds);
@@ -367,10 +367,10 @@ for(i in 1:10){
   model_kNN <- kknn(Cases...Weekly ~ ZIP.Code + Week.Number + Week.Start + Population + Year + Month + Prior.Week.Cumulative + Prior.Week.Rate, train, test, distance=1, k=9)
 
 #predict with model
-  pred.value <- predict(model_kNN)
+  pred.valueKN <- predict(model_kNN)
   
   # make actuals-predicteds dataframe.
-  actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.value));
+  actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.valueKN));
   
   #calculate accuracy
   acc[i] <- cor(actuals_preds$actuals, actuals_preds$predicteds);
@@ -413,7 +413,21 @@ rm(list = zRemoved_objs)
 
 Compare all model performances (Table & ROC Curves)
 ```{r}
+library(caTools)
+library(ROCR)
 
+#plot logistic regressin
+lr_ROCRpred <- prediction(as.numeric(pred.value), test$Cases...Weekly)
+lr_ROCRperf <- performance(lr_ROCRpred, 'tpr', 'fpr')
+#plot naive bayes
+nb_ROCRpred <- prediction(as.numeric(pred.valueNB), test$class)
+nb_ROCRperf <- performance(nb_ROCRpred, 'tpr', 'fpr')
+#plot decision tree
+dt_ROCRpred <- prediction(as.numeric(pred.valueDT), test$class)
+dt_ROCRperf <- performance(dt_ROCRpred, 'tpr', 'fpr')
+#plot k-nn
+kn_ROCRpred <- prediction(as.numeric(pred.valueKN), test$class)
+kn_ROCRperf <- performance(kn_ROCRpred, 'tpr', 'fpr')
 
 ```
 
