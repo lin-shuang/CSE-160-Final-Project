@@ -115,6 +115,8 @@ Build Linear Regression model. Test using 10-fold cross validation. Save perform
 acc <- c()
 precs <- c()
 rec <- c()
+mape <- c()
+mse<- c()
 
 #increment each test fold 
 for(i in 1:10){
