@@ -440,7 +440,7 @@ rec_list <- c(rec_glm, rec_nB, rec_tree, rec_kNN)
 prec_list <- c(precs_glm, precs_nB, precs_tree, precs_kNN)
 tab <- rbind(mape_list,mse_list, acc_list, rec_list, prec_list)
 colnames(tab) <- c("Linear Regression", "Naive Bayes", "Decision Tree", "K Nearest Neighbors")
-rownames <- c("Mean Absolute Percent Error", "Mean Squared Error", "Accuracy", "Recall", "Precission")
+rownames(tab) <- c("Mean Absolute Percent Error", "Mean Squared Error", "Accuracy", "Recall", "Precission")
 #print the table of the different accuracies
 tab
 #the model with the lowest mean ablsolute percentage error, as well as one of the highest accuracies is the naive bayes model so that should be the model that is used
