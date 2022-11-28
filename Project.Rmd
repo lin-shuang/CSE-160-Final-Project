@@ -431,6 +431,19 @@ dt_ROCRperf <- performance(dt_ROCRpred, 'tpr', 'fpr')
 kn_ROCRpred <- prediction(as.numeric(pred.valueKN), test$class)
 kn_ROCRperf <- performance(kn_ROCRpred, 'tpr', 'fpr')
 
+
+#create a table of the different accuracy measures for each model
+mape_list <- c(mape_glm, mape_nB,mape_tree, mape_kNN)
+mse_list <- c(mse_glm, mse_nB, mse_tree, mse_kNN)
+acc_list <- c(acc_glm, acc_nB, acc_tree, acc_kNN)
+rec_list <- c(rec_glm, rec_nB, rec_tree, rec_kNN)
+prec_list <- c(precs_glm, precs_nB, precs_tree, precs_kNN)
+tab <- rbind(mape_list,mse_list, acc_list, rec_list, prec_list)
+colnames(tab) <- c("Linear Regression", "Naive Bayes", "Decision Tree", "K Nearest Neighbors")
+rownames <- c("Mean Average Percent Error", "Mean Squared Error", "Accuracy", "Recall", "Precission")
+#print the table of the different accuracies
+tab
+
 ```
 
 Use best model to predict infection rate on test data.
