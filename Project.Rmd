@@ -443,6 +443,7 @@ colnames(tab) <- c("Linear Regression", "Naive Bayes", "Decision Tree", "K Neare
 rownames <- c("Mean Absolute Percent Error", "Mean Squared Error", "Accuracy", "Recall", "Precission")
 #print the table of the different accuracies
 tab
+#the model with the lowest mean ablsolute percentage error, as well as one of the highest accuracies is the naive bayes model so that should be the model that is used
 
 ```
 
