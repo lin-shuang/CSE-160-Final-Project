@@ -53,6 +53,7 @@ df_covid$Year <- format(df_covid$Week.Start, "%y");
 df_covid$Month <- format(df_covid$Week.Start, "%m");
 
 #last week's cumulative cases by zip code
+df_covid$Prior.Week.Cumulative <- NA
 for (i in 2:nrow(df_covid)){
   if(df_covid$ZIP.Code[i] == df_covid$ZIP.Code[i-1]){
     df_covid$Prior.Week.Cumulative[i] <- df_covid$Cases...Cumulative[i-1];
@@ -63,6 +64,7 @@ for (i in 2:nrow(df_covid)){
 }
 
 #last week's case rate by zip code
+df_covid$Prior.Week.Rate <- NA
 for (i in 2:nrow(df_covid)){
   if(df_covid$ZIP.Code[i] == df_covid$ZIP.Code[i-1]){
     df_covid$Prior.Week.Rate[i] <- ((df_covid$Cases...Cumulative[i-1]) / (df_covid$Population[i-1]));
