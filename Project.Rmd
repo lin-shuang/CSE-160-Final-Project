@@ -7,51 +7,41 @@ output: html_notebook
 
 Import data and Chicago shapefile
 ```{r}
-
-df_original <- read.csv("COVID-19_Cases__Tests__and_Deaths_by_ZIP_Code.csv")
-
+df_original <- read.csv("https://data.cityofchicago.org/api/views/yhhz-zm2v/rows.csv?accessType=DOWNLOAD")
 #set seed for consistency
 set.seed(160)
 
+# add a binary attribute for binary classification
+df_original$predict <- df_original$Cases...Weekly != "unacc"
 ```
 
 Clean data
 ```{r}
-
 #clean attributes
 df_covid <- subset(df_original, select = -c(Row.ID, Death.Rate...Cumulative, Death.Rate...Weekly, Deaths...Cumulative, Deaths...Weekly, Tests...Cumulative, Tests...Weekly, Test.Rate...Cumulative, Test.Rate...Weekly, Percent.Tested.Positive...Cumulative, Percent.Tested.Positive...Weekly, Case.Rate...Cumulative, Case.Rate...Weekly, Week.End))
-
 #remove unknown zip codes
 for(i in 1:nrow(df_covid)){
   if(df_covid$ZIP.Code[i] == "Unknown"){
     df_covid$ZIP.Code[i] <- NA
   }
 }
-
 #remove all NAs
 df_covid <- na.omit(df_covid)
-
 #format dates
 df_covid$Week.Start<-as.Date(df_covid$Week.Start, format = "%m/%d/%Y")
-
 #sort by ZIP.Code then Week.Start date then Week.Number
 df_covid <- df_covid[order(df_covid$ZIP.Code, df_covid$Week.Start, df_covid$Week.Number), ]
-
 ```
 
 Clean shapefile
 ```{r}
-
-
 ```
 
 Set up time series
 ```{r}
-
 #year and month
 df_covid$Year <- format(df_covid$Week.Start, "%y");
 df_covid$Month <- format(df_covid$Week.Start, "%m");
-
 #last week's cumulative cases by zip code
 df_covid$Prior.Week.Cumulative <- NA
 for (i in 2:nrow(df_covid)){
@@ -62,7 +52,6 @@ for (i in 2:nrow(df_covid)){
     df_covid$Prior.Week.Cumulative[i] <- NA
   }
 }
-
 #last week's case rate by zip code
 df_covid$Prior.Week.Rate <- NA
 for (i in 2:nrow(df_covid)){
@@ -73,53 +62,42 @@ for (i in 2:nrow(df_covid)){
     df_covid$Prior.Week.Rate[i] <- NA
   }
 }
-
 #remove zip code 60666 (airport), creates inf rate due to 0 population
 for(i in 1:nrow(df_covid)){
   if(df_covid$ZIP.Code[i] == "60666"){
     df_covid$ZIP.Code[i] <- NA
   }
 }
-
 #remove NAs again for first-time recordings of each zip code in 2020
 df_covid <- na.omit(df_covid)
-
 ```
 
 Randomly sort data for testing. Keep neat data for viewing.
 ```{r}
-
 #keep neat data
 df_covid_sorted <- df_covid
-
 #randomly sort
 df_covid <- df_covid[sample(1:nrow(df_covid)), ]
-
 ```
 
 Partition data (10-folds)
 ```{r}
-
 #partition to 10-folds of data, 10% each
 folds_list <- list()
-
 for(i in 1:10){
   
   folds_list[[i]] <- df_covid[(1 + (810*(i-1))):(810 * (i)),] #rounded up
 }
-
 ```
 
 Build Linear Regression model. Test using 10-fold cross validation. Save performance measures or later comparison.
 ```{r}
-
 #initialize vectors of accuracy, precision, and recall
 acc <- c()
 precs <- c()
 rec <- c()
 mape <- c()
 mse<- c()
-
 #increment each test fold 
 for(i in 1:10){
   
@@ -142,10 +120,10 @@ for(i in 1:10){
   test <- na.omit(test)
   
   #build model
-  model_glm <- glm(Cases...Weekly ~ ZIP.Code + Week.Number + Week.Start + Population + Year + Month + Prior.Week.Cumulative + Prior.Week.Rate, data=train)
+  model_glm <- glm(formula = Cases...Weekly ~ ZIP.Code + Week.Number + Week.Start + Population + Year + Month + Prior.Week.Cumulative + Prior.Week.Rate, data=train, family = "binomial")
   
   #predict with model
-  pred.value <- predict(model_glm, test)
+  pred.value <- predict(model_glm, test, type = "response")
   
   # make actuals-predicteds dataframe.
   actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.value));
@@ -155,7 +133,6 @@ for(i in 1:10){
   
   #calculate precision
   precs[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$predicteds)
-
   #calculate recall
   rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
   
@@ -166,34 +143,28 @@ for(i in 1:10){
   #calculate the mean squared error
   mse[i] <- mean((test$Cases...Weekly-pred.value)^2)
 }
-
 #print Averages
 print(paste0("Average Accuracy: ", mean(acc))) 
 print(paste0("Average Precision: ", mean(precs)))
 print(paste0("Average Recall: ", mean(rec)))
 print(paste0("Average Mean Absolute Percent Error: ", mean(mape)))
 print(paste0("Average Mean Squared Error: ", mean (mse)))
-
 #store performance measures
 acc_glm <- mean(acc)
 precs_glm <- mean(precs)
 rec_glm <- mean(rec)
 mape_glm<- mean(mape)
 mse_glm <- mean(mse)
-
 ```
 
 Build Naive Bayes model. Test using 10-fold cross validation. Save performance measures or later comparison.
 ```{r}
-
 #nb library
 library(e1071)
-
 #initialize vectors of accuracy, precision, and recall
 acc <- c()
 precs <- c()
 rec <- c()
-
 #increment each test fold 
 for(i in 1:10){
   
@@ -219,7 +190,7 @@ for(i in 1:10){
   model_nB <- naiveBayes(Cases...Weekly ~ ZIP.Code + Week.Number + Week.Start + Population + Year + Month + Prior.Week.Cumulative + Prior.Week.Rate, data=train)
   
   #predict with model
-  pred.valueNB <- predict(model_nB, test)
+  pred.valueNB <- predict(model_nB, test, type = "class")
   
   # make actuals-predicteds dataframe.
   actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.valueNB));
@@ -229,7 +200,6 @@ for(i in 1:10){
   
   #calculate precision
   precs[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$predicteds)
-
   #calculate recall
   rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
   
@@ -245,34 +215,28 @@ for(i in 1:10){
   #calculate the mean squared error
   mse[i] <- mean((test$Cases...Weekly-num_pred)^2)
 }
-
 #print Averages
 print(paste0("Average Accuracy: ", mean(acc))) 
 print(paste0("Average Precision: ", mean(precs)))
 print(paste0("Average Recall: ", mean(rec)))
 print(paste0("Average Mean Absolute Percent Error: ", mean(mape)))
 print(paste0("Average Mean Squared Error: ", mean (mse)))
-
 #store performance measures
 acc_nB <- mean(acc)
 precs_nB <- mean(precs)
 rec_nB <- mean(rec)
 mape_nB<- mean(mape)
 mse_nB <- mean(mse)
-
 ```
 
 Build Decision Tree model. Test using 10-fold cross validation. Save performance measures or later comparison.
 ```{r}
-
 #decision tree library
-library(rpart);
-
+library(rpart)
 #initialize vectors of accuracy, precision, and recall
 acc <- c()
 precs <- c()
 rec <- c()
-
 #increment each test fold 
 for(i in 1:10){
   
@@ -296,7 +260,6 @@ for(i in 1:10){
   
   #build model
   model_tree <- rpart(Cases...Weekly ~ ZIP.Code + Week.Number + Week.Start + Population + Year + Month + Prior.Week.Cumulative + Prior.Week.Rate, data=train)
-
 #predict with model
   pred.valueDT <- predict(model_tree, test)
   
@@ -308,7 +271,6 @@ for(i in 1:10){
   
   #calculate precision
   precs[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$predicteds)
-
   #calculate recall
   rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
   
@@ -318,34 +280,28 @@ for(i in 1:10){
   #calculate the mean squared error
   mse[i] <- mean((test$Cases...Weekly-pred.value)^2)
 }
-
 #print Averages
 print(paste0("Average Accuracy: ", mean(acc))) 
 print(paste0("Average Precision: ", mean(precs)))
 print(paste0("Average Recall: ", mean(rec)))
 print(paste0("Average Mean Absolute Percent Error: ", mean(mape)))
 print(paste0("Average Mean Squared Error: ", mean (mse)))
-
 #store performance measures
 acc_tree <- mean(acc)
 precs_tree <- mean(precs)
 rec_tree <- mean(rec)
 mape_tree<- mean(mape)
 mse_tree <- mean(mse)
-
 ```
 
 Build K Nearest Neighbor model with ZIP.Code as numeric because kNN requires all attributes to be numeric (it is okay because neighboring zip codes are related in numbering). Test using 10-fold cross validation. Save performance measures or later comparison. Found by testing that distance=1 and k=9 is best.
 ```{r}
-
 #kNN library
 library(kknn)
-
 #initialize vectors of accuracy, precision, and recall
 acc <- c()
 precs <- c()
 rec <- c()
-
 #increment each test fold 
 for(i in 1:10){
   
@@ -369,7 +325,6 @@ for(i in 1:10){
   
   #build model
   model_kNN <- kknn(Cases...Weekly ~ ZIP.Code + Week.Number + Week.Start + Population + Year + Month + Prior.Week.Cumulative + Prior.Week.Rate, train, test, distance=1, k=9)
-
 #predict with model
   pred.valueKN <- predict(model_kNN)
   
@@ -381,7 +336,6 @@ for(i in 1:10){
   
   #calculate precision
   precs[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$predicteds)
-
   #calculate recall
   rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
   
@@ -391,14 +345,12 @@ for(i in 1:10){
   #calculate the mean squared error
   mse[i] <- mean((test$Cases...Weekly-pred.value)^2)
 }
-
 #print Averages
 print(paste0("Average Accuracy: ", mean(acc))) 
 print(paste0("Average Precision: ", mean(precs)))
 print(paste0("Average Recall: ", mean(rec)))
 print(paste0("Average Mean Absolute Percent Error: ", mean(mape)))
 print(paste0("Average Mean Squared Error: ", mean (mse)))
-
 #store performance measures
 acc_kNN <- mean(acc)
 precs_kNN <- mean(precs)
@@ -409,31 +361,26 @@ mse_kNN <- mean(mse)
 
 Clean workspace environment
 ```{r}
-
 zRemoved_objs <- c("pred.value", "actuals_preds", "folds_list", "i", "j", "test", "train", "acc", "precs", "rec")
 rm(list = zRemoved_objs)
-
 ```
 
 Compare all model performances (Table & ROC Curves)
 ```{r}
 library(caTools)
 library(ROCR)
-
-#plot logistic regressin
+#plot logistic regressipn
 lr_ROCRpred <- prediction(as.numeric(pred.value), test$Cases...Weekly)
 lr_ROCRperf <- performance(lr_ROCRpred, 'tpr', 'fpr')
 #plot naive bayes
-nb_ROCRpred <- prediction(as.numeric(pred.valueNB), test$class)
+nb_ROCRpred <- prediction(as.numeric(pred.valueNB), test$Cases...Weekly)
 nb_ROCRperf <- performance(nb_ROCRpred, 'tpr', 'fpr')
 #plot decision tree
-dt_ROCRpred <- prediction(as.numeric(pred.valueDT), test$class)
+dt_ROCRpred <- prediction(as.numeric(pred.valueDT), test$Cases...Weekly)
 dt_ROCRperf <- performance(dt_ROCRpred, 'tpr', 'fpr')
 #plot k-nn
-kn_ROCRpred <- prediction(as.numeric(pred.valueKN), test$class)
+kn_ROCRpred <- prediction(as.numeric(pred.valueKN), test$Cases...Weekly)
 kn_ROCRperf <- performance(kn_ROCRpred, 'tpr', 'fpr')
-
-
 #create a table of the different accuracy measures for each model
 mape_list <- c(mape_glm, mape_nB,mape_tree, mape_kNN)
 mse_list <- c(mse_glm, mse_nB, mse_tree, mse_kNN)
@@ -446,29 +393,20 @@ rownames(tab) <- c("Mean Absolute Percent Error", "Mean Squared Error", "Accurac
 #print the table of the different accuracies
 tab
 #the model with the lowest mean ablsolute percentage error, as well as one of the highest accuracies is the naive bayes model so that should be the model that is used
-
 ```
 
 Use best model to predict infection rate on test data.
 ```{r}
-
-
 ```
 
 Add binary attribute to data frame to create the easier read mapping
 ```{r}
-
-
 ```
 
 Mapping of infection risk percentages
 ```{r}
-
-
 ```
 
 Mapping of binary risk areas
 ```{r}
-
-
 ```
