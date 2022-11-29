@@ -125,6 +125,9 @@ for(i in 1:10){
   #predict with model
   pred.value <- predict(model_glm, test, type = "response")
   
+  #class prediction
+  class_prediction <- ifelse(pred.value > 0.5, TRUE, FALSE)
+  
   # make actuals-predicteds dataframe.
   actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.value));
   
@@ -369,18 +372,10 @@ Compare all model performances (Table & ROC Curves)
 ```{r}
 library(caTools)
 library(ROCR)
-#plot logistic regressipn
-lr_ROCRpred <- prediction(as.numeric(pred.value), test$Cases...Weekly)
+#plot logistic regression, ROC = tpr vs fpr
+lr_ROCRpred <- prediction(as.numeric(pred.value), class_prediction)
 lr_ROCRperf <- performance(lr_ROCRpred, 'tpr', 'fpr')
-#plot naive bayes
-nb_ROCRpred <- prediction(as.numeric(pred.valueNB), test$Cases...Weekly)
-nb_ROCRperf <- performance(nb_ROCRpred, 'tpr', 'fpr')
-#plot decision tree
-dt_ROCRpred <- prediction(as.numeric(pred.valueDT), test$Cases...Weekly)
-dt_ROCRperf <- performance(dt_ROCRpred, 'tpr', 'fpr')
-#plot k-nn
-kn_ROCRpred <- prediction(as.numeric(pred.valueKN), test$Cases...Weekly)
-kn_ROCRperf <- performance(kn_ROCRpred, 'tpr', 'fpr')
+plot(lr_ROCRperf, colorize=TRUE, text.adj = c(-0.2, 1.7), main="ROC Curve")
 #create a table of the different accuracy measures for each model
 mape_list <- c(mape_glm, mape_nB,mape_tree, mape_kNN)
 mse_list <- c(mse_glm, mse_nB, mse_tree, mse_kNN)
