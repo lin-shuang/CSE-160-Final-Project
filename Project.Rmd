@@ -368,14 +368,25 @@ zRemoved_objs <- c("pred.value", "actuals_preds", "folds_list", "i", "j", "test"
 rm(list = zRemoved_objs)
 ```
 
-Compare all model performances (Table & ROC Curves)
+Compare all model performances (Table & Scatterplots)
 ```{r}
-library(caTools)
-library(ROCR)
-#plot logistic regression, ROC = tpr vs fpr
-lr_ROCRpred <- prediction(as.numeric(pred.value), class_prediction)
-lr_ROCRperf <- performance(lr_ROCRpred, 'tpr', 'fpr')
-plot(lr_ROCRperf, colorize=TRUE, text.adj = c(-0.2, 1.7), main="ROC Curve")
+library(ggplot2)
+#logistic regression
+g <- ggplot(data = actuals_preds, aes(x=actuals, y=predicteds))
+g + geom_point() 
+
+#naive bayes
+g <- ggplot(data = actuals_predsNB, aes(x=actuals, y=predicteds))
+g + geom_point() 
+
+#decision tree
+g <- ggplot(data = actuals_predsDT, aes(x=actuals, y=predicteds))
+g + geom_point()
+
+#k nearest neighbor
+g <- ggplot(data = actuals_predsKN, aes(x=actuals, y=predicteds))
+g + geom_point()
+
 #create a table of the different accuracy measures for each model
 mape_list <- c(mape_glm, mape_nB,mape_tree, mape_kNN)
 mse_list <- c(mse_glm, mse_nB, mse_tree, mse_kNN)
