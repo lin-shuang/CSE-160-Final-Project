@@ -120,7 +120,7 @@ for(i in 1:10){
   test <- na.omit(test)
   
   #build model
-  model_glm <- glm(formula = Cases...Weekly ~ ZIP.Code + Week.Number + Week.Start + Population + Year + Month + Prior.Week.Cumulative + Prior.Week.Rate, data=train, family = "binomial")
+  model_glm <- glm(formula = Cases...Weekly ~ ZIP.Code + Week.Number + Week.Start + Population + Year + Month + Prior.Week.Cumulative + Prior.Week.Rate, data=train)
   
   #predict with model
   pred.value <- predict(model_glm, test, type = "response")
