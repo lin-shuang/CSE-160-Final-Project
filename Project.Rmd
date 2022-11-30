@@ -125,23 +125,23 @@ for(i in 1:10){
   #predict with model
   pred.value <- predict(model_glm, test)
   
-  #class prediction
+  #class prediction //debug
   class_prediction <- ifelse(pred.value > 0.5, TRUE, FALSE)
   
   # make actuals-predicteds dataframe.
-  actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.value));
+  actuals_predsLR <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.value));
   
   #calculate accuracy
-  acc[i] <- cor(actuals_preds$actuals, actuals_preds$predicteds);
+  acc[i] <- cor(actuals_predsLR$actuals, actuals_predsLR$predicteds);
   
   #calculate precision
-  precs[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$predicteds)
+  precs[i] <- sum(actuals_predsLR$predicteds & actuals_predsLR$actuals) / sum(actuals_predsLR$predicteds)
   #calculate recall
-  rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
+  rec[i] <- sum(actuals_predsLR$predicteds & actuals_predsLR$actuals) / sum(actuals_predsLR$actuals)
   
   #calculate the mean absolute percentage error, must remove the rows where the actual value is equal to zero to avoid division by 0.
-  actuals_preds_mape <-actuals_preds[(actuals_preds$actuals!=0),]
-  mape[i] <- mean(abs((actuals_preds_mape$predicteds - actuals_preds_mape$actuals)/actuals_preds_mape$actuals))
+  actuals_predsLR_mape <-actuals_predsLR[(actuals_predsLR$actuals!=0),]
+  mape[i] <- mean(abs((actuals_predsLR_mape$predicteds - actuals_predsLR_mape$actuals)/actuals_predsLR_mape$actuals))
   
   #calculate the mean squared error
   mse[i] <- mean((test$Cases...Weekly-pred.value)^2)
@@ -196,24 +196,24 @@ for(i in 1:10){
   pred.valueNB <- predict(model_nB, test, type = "class")
   
   # make actuals-predicteds dataframe.
-  actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.valueNB));
+  actuals_predsNB <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.valueNB));
   
   #calculate accuracy
-  acc[i] <- cor(actuals_preds$actuals, actuals_preds$predicteds);
+  acc[i] <- cor(actuals_predsNB$actuals, actuals_predsNB$predicteds);
   
   #calculate precision
-  precs[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$predicteds)
+  precs[i] <- sum(actuals_predsNB$predicteds & actuals_predsNB$actuals) / sum(actuals_predsNB$predicteds)
   #calculate recall
-  rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
+  rec[i] <- sum(actuals_predsNB$predicteds & actuals_predsNB$actuals) / sum(actuals_predsNB$actuals)
   
   #calculate the mean absolute percentage error
   #the number of cases are being stored as factors, so we must convert them to numbers
-  num_pred <- as.numeric(as.character(actuals_preds$predicteds))
-  num_act <- as.numeric(as.character(actuals_preds$actuals))
-  actuals_preds_mape <- data.frame(num_act,num_pred)
+  num_pred <- as.numeric(as.character(actuals_predsNB$predicteds))
+  num_act <- as.numeric(as.character(actuals_predsNB$actuals))
+  actuals_predsNB_mape <- data.frame(num_act,num_pred)
   #must remove the rows where the actual value is equal to zero to avoid division by 0
-  actuals_preds_mape <-actuals_preds_mape[(actuals_preds_mape$num_act!=0),]
-  mape[i] <- mean(abs((actuals_preds_mape$num_pred - actuals_preds_mape$num_act)/actuals_preds_mape$num_act))
+  actuals_predsNB_mape <-actuals_predsNB_mape[(actuals_predsNB_mape$num_act!=0),]
+  mape[i] <- mean(abs((actuals_predsNB_mape$num_pred - actuals_predsNB_mape$num_act)/actuals_predsNB_mape$num_act))
   
   #calculate the mean squared error
   mse[i] <- mean((test$Cases...Weekly-num_pred)^2)
@@ -267,19 +267,19 @@ for(i in 1:10){
   pred.valueDT <- predict(model_tree, test)
   
   # make actuals-predicteds dataframe.
-  actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.valueDT));
+  actuals_predsDT <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.valueDT));
   
   #calculate accuracy
-  acc[i] <- cor(actuals_preds$actuals, actuals_preds$predicteds);
+  acc[i] <- cor(actuals_predsDT$actuals, actuals_predsDT$predicteds);
   
   #calculate precision
-  precs[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$predicteds)
+  precs[i] <- sum(actuals_predsDT$predicteds & actuals_predsDT$actuals) / sum(actuals_predsDT$predicteds)
   #calculate recall
-  rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
+  rec[i] <- sum(actuals_predsDT$predicteds & actuals_predsDT$actuals) / sum(actuals_predsDT$actuals)
   
   #calculate the mean absolute percentage error, must remove the rows where the actual value is equal to zero to avoid division by 0.
-  actuals_preds_mape <-actuals_preds[(actuals_preds$actuals!=0),]
-  mape[i] <- mean(abs((actuals_preds_mape$predicteds - actuals_preds_mape$actuals)/actuals_preds_mape$actuals))
+  actuals_predsDT_mape <-actuals_predsDT[(actuals_predsDT$actuals!=0),]
+  mape[i] <- mean(abs((actuals_predsDT_mape$predicteds - actuals_predsDT_mape$actuals)/actuals_predsDT_mape$actuals))
   #calculate the mean squared error
   mse[i] <- mean((test$Cases...Weekly-pred.value)^2)
 }
@@ -332,19 +332,19 @@ for(i in 1:10){
   pred.valueKN <- predict(model_kNN)
   
   # make actuals-predicteds dataframe.
-  actuals_preds <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.valueKN));
+  actuals_predsKN <- data.frame(cbind(actuals = test$Cases...Weekly, predicteds = pred.valueKN));
   
   #calculate accuracy
-  acc[i] <- cor(actuals_preds$actuals, actuals_preds$predicteds);
+  acc[i] <- cor(actuals_predsKN$actuals, actuals_predsKN$predicteds);
   
   #calculate precision
-  precs[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$predicteds)
+  precs[i] <- sum(actuals_predsKN$predicteds & actuals_predsKN$actuals) / sum(actuals_predsKN$predicteds)
   #calculate recall
-  rec[i] <- sum(actuals_preds$predicteds & actuals_preds$actuals) / sum(actuals_preds$actuals)
+  rec[i] <- sum(actuals_predsKN$predicteds & actuals_predsKN$actuals) / sum(actuals_predsKN$actuals)
   
   #calculate the mean absolute percentage error, must remove the rows where the actual value is equal to zero to avoid division by 0.
-  actuals_preds_mape <-actuals_preds[(actuals_preds$actuals!=0),]
-  mape[i] <- mean(abs((actuals_preds_mape$predicteds - actuals_preds_mape$actuals)/actuals_preds_mape$actuals))
+  actuals_predsKN_mape <-actuals_predsKN[(actuals_predsKN$actuals!=0),]
+  mape[i] <- mean(abs((actuals_predsKN_mape$predicteds - actuals_predsKN_mape$actuals)/actuals_predsKN_mape$actuals))
   #calculate the mean squared error
   mse[i] <- mean((test$Cases...Weekly-pred.value)^2)
 }
@@ -364,7 +364,7 @@ mse_kNN <- mean(mse)
 
 Clean workspace environment
 ```{r}
-zRemoved_objs <- c("pred.value", "actuals_preds", "folds_list", "i", "j", "test", "train", "acc", "precs", "rec")
+zRemoved_objs <- c("pred.value", "folds_list", "i", "j", "test", "train", "acc", "precs", "rec")
 rm(list = zRemoved_objs)
 ```
 
@@ -372,7 +372,7 @@ Compare all model performances (Table & Scatterplots)
 ```{r}
 library(ggplot2)
 #logistic regression
-g <- ggplot(data = actuals_preds, aes(x=actuals, y=predicteds))
+g <- ggplot(data = actuals_predsLR, aes(x=actuals, y=predicteds))
 g + geom_point() 
 
 #naive bayes
@@ -403,7 +403,7 @@ tab <- round(tab, digits = 5)
 print(tab, print.gap = 3, )
 #print the table of the different accuracies
 tab
-#the model with the lowest mean ablsolute percentage error, as well as one of the highest accuracies is the naive bayes model so that should be the model that is used
+#the model with the lowest mean absolute percentage error, as well as one of the highest accuracies is the naive bayes model so that should be the model that is used
 ```
 
 Use best model to predict infection rate on test data.
