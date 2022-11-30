@@ -123,7 +123,7 @@ for(i in 1:10){
   model_glm <- glm(formula = Cases...Weekly ~ ZIP.Code + Week.Number + Week.Start + Population + Year + Month + Prior.Week.Cumulative + Prior.Week.Rate, data=train)
   
   #predict with model
-  pred.value <- predict(model_glm, test, type = "response")
+  pred.value <- predict(model_glm, test)
   
   #class prediction
   class_prediction <- ifelse(pred.value > 0.5, TRUE, FALSE)
