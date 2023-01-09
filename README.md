@@ -24,6 +24,7 @@
   - https://catalog.data.gov/dataset/covid-19-cases-tests-and-deaths-by-zip-code
 
 ### Highlights
+  - RStudio notebook
   - mapping
   - predictive models
   - time series
