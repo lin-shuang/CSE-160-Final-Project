@@ -27,3 +27,6 @@ Highlights
   - mapping
   - predictive models
   - time series
+
+Future Applications
+  - data mining from data.gov directly for auto updates
