@@ -16,6 +16,9 @@
   - tow225@lehigh.edu
 
 ## Chicao Covid Data
+
+https://catalog.data.gov/dataset/covid-19-cases-tests-and-deaths-by-zip-code
+
 - mapping
 - predictive models
 - time series
