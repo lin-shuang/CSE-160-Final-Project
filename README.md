@@ -17,8 +17,6 @@
 - Tony Wu
   - tow225@lehigh.edu
 
-## Chicao Covid Data
-
 Project Report
   - https://docs.google.com/document/d/12cJg-7Rpftz8ziJvq2b-ElL20gJsRKYIcqdFYkqpXKM/edit?usp=sharing
 
