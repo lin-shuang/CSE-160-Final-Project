@@ -1,4 +1,6 @@
-# CSE 160 - Final Project
+# Chicago Covid Data
+
+### CSE 160 - Final Project
 
 - Shuang Lin
   - shl224@lehigh.edu
