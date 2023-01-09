@@ -17,8 +17,13 @@
 
 ## Chicao Covid Data
 
-https://catalog.data.gov/dataset/covid-19-cases-tests-and-deaths-by-zip-code
+Project Report
+  - https://docs.google.com/document/d/12cJg-7Rpftz8ziJvq2b-ElL20gJsRKYIcqdFYkqpXKM/edit?usp=sharing
 
-- mapping
-- predictive models
-- time series
+Data Source
+  - https://catalog.data.gov/dataset/covid-19-cases-tests-and-deaths-by-zip-code
+
+Highlights
+  - mapping
+  - predictive models
+  - time series
