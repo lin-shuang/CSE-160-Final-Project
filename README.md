@@ -17,16 +17,16 @@
 - Tony Wu
   - tow225@lehigh.edu
 
-Project Report
+### Project Report
   - https://docs.google.com/document/d/12cJg-7Rpftz8ziJvq2b-ElL20gJsRKYIcqdFYkqpXKM/edit?usp=sharing
 
-Data Source
+### Data Source
   - https://catalog.data.gov/dataset/covid-19-cases-tests-and-deaths-by-zip-code
 
-Highlights
+### Highlights
   - mapping
   - predictive models
   - time series
 
-Future Applications
+### Future Applications
   - data mining from data.gov directly for auto updates
